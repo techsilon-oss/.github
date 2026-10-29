@@ -1,6 +1,6 @@
 # techsilon-oss
 
-Small, focused kits for building and shipping software with guardrails. They're MIT-licensed, published by Techsilon LLC, and all follow one [kit standard](https://github.com/techsilon-oss/.github/blob/main/KIT-STANDARD.md).
+Small, focused kits for building and shipping software with guardrails, published by Techsilon LLC under the MIT license, and following one [kit standard](https://github.com/techsilon-oss/.github/blob/main/KIT-STANDARD.md). release-gate-kit has no license file yet and is moving to MIT; see its checklist.
 
 | Kit | What it does |
 |---|---|
