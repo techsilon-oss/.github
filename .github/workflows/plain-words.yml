@@ -1,0 +1,58 @@
+# Reusable: fails when README.md or a doc under docs/ uses a filler word from
+# the kit standard (KIT-STANDARD.md, "Documentation"). The list lives here, once.
+# Code blocks and `inline code` are skipped; so are docs/notes/ (records of what
+# was said) and docs/archive/.
+# Call it from a kit's CI:
+#   plain-words:
+#     uses: techsilon-oss/.github/.github/workflows/plain-words.yml@main
+name: Plain words
+on:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  plain-words:
+    name: Plain words
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: No filler words in README.md and docs/
+        shell: bash
+        run: |
+          node --input-type=module <<'JS'
+          import { readFileSync, readdirSync, statSync, existsSync } from 'node:fs';
+          import { join } from 'node:path';
+          const WORDS = `seamless seamlessly robust powerful leverage leverages leveraging unlock unlocks
+          effortless effortlessly cutting-edge game-changing game-changer revolutionary
+          world-class best-in-class supercharge elevate empower empowers streamline
+          streamlines delve blazing next-generation state-of-the-art synergy holistic`.split(/\s+/).filter(Boolean);
+          const re = new RegExp(String.raw`(?<![\w-])(${WORDS.join('|')})(?![\w-])`, 'gi');
+          const SKIP = ['docs/notes', 'docs/archive'];
+          const files = [];
+          if (existsSync('README.md')) files.push('README.md');
+          const walk = (d) => {
+            for (const n of readdirSync(d)) {
+              const p = join(d, n).split('\\').join('/');
+              if (statSync(p).isDirectory()) { if (!SKIP.includes(p)) walk(p); }
+              else if (/\.md$/i.test(n)) files.push(p);
+            }
+          };
+          if (existsSync('docs')) walk('docs');
+          let found = 0;
+          for (const f of files) {
+            let fence = false;
+            readFileSync(f, 'utf8').split(/\r?\n/).forEach((line, i) => {
+              if (/^\s{0,3}(```|~~~)/.test(line)) { fence = !fence; return; }
+              if (fence) return;
+              for (const m of line.replace(/`[^`]*`/g, '').matchAll(re)) {
+                console.log(`::error file=${f},line=${i + 1}::"${m[1]}" is a filler word (KIT-STANDARD.md, Documentation). Say what it does instead.`);
+                found++;
+              }
+            });
+          }
+          console.log(found ? `${found} filler word(s) in ${files.length} file(s).` : `No filler words in ${files.length} file(s).`);
+          process.exit(found ? 1 : 0);
+          JS

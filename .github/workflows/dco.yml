@@ -1,0 +1,32 @@
+# Reusable: fails when a commit in the pull request has no Signed-off-by line (DCO).
+# Call it from a kit's CI:
+#   dco:
+#     uses: techsilon-oss/.github/.github/workflows/dco.yml@main
+name: DCO
+on:
+  workflow_call:
+permissions:
+  contents: read
+jobs:
+  dco:
+    name: DCO sign-off
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Every commit is signed off
+        env:
+          BASE: ${{ github.event.pull_request.base.sha }}
+          HEAD: ${{ github.event.pull_request.head.sha }}
+        run: |
+          missing=0
+          for c in $(git rev-list --no-merges "$BASE..$HEAD"); do
+            if ! git log -1 --format=%B "$c" | grep -qE '^Signed-off-by: .+ <.+>$'; then
+              echo "::error::$(git log -1 --format='%h %s' "$c"): no Signed-off-by line. Amend with: git commit --amend -s"
+              missing=1
+            fi
+          done
+          if [ "$missing" = 0 ]; then echo "Every commit is signed off."; fi
+          exit $missing

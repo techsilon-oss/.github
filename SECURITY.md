@@ -9,7 +9,7 @@ Thank you for taking the time to report a problem. **Please don't open a public 
 
 Include what you found, how to reproduce it, and the version (the kit's `v<version>` tag or the version in its manifest).
 
-You'll get an acknowledgement, and then a fix or an assessment, as soon as it has been looked at.
+**Response times:** an acknowledgement within 5 business days, and an assessment (confirmed or not, how severe, and the plan) within 15 business days. A confirmed problem gets a fix release and a published advisory that credits you, unless you ask not to be named.
 
 ## Supported versions
 
